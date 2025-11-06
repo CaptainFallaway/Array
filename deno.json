@@ -1,0 +1,9 @@
+{
+  "tasks": {
+    "run": "deno run main.ts",
+		"build": "deno bundle main.ts -o dist/bundle.js"
+  },
+  "imports": {
+    "@std/assert": "jsr:@std/assert@1"
+  }
+}
