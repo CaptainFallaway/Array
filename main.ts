@@ -1,18 +1,16 @@
 import { AllocatedArray } from "./array.ts";
 
-const ll = new AllocatedArray(10);
+const ll = new AllocatedArray(250);
 
-const log = console.log;
+function randomNum(min: number, max: number): number {
+	return Math.floor(Math.random() * (max - min) + min);
+}
 
-ll.push(10);
-ll.push(20);
-log(ll);
+const blah = new Array(250).fill(0).map(() => randomNum(-1000, 1000));
 
-const thing = ll.at(-2);
+ll.merge(blah);
 
-log(ll);
-log(thing);
+const time = ll.sort();
 
-ll.clear();
-
-log(ll);
+console.log(ll);
+console.log(time);

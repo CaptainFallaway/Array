@@ -1,5 +1,5 @@
 export class OutOfBoundsError extends Error {
-	constructor(message = "Index is out of bounds") {
+	constructor(message = "Array operation is out of bounds") {
 		super(message);
 		this.name = "OutOfBoundsError";
 	}
@@ -50,7 +50,7 @@ export class AllocatedArray {
 	}
 
 	push(num: number) {
-		if (this.#length + 1 >= this.size) {
+		if (this.#length + 1 > this.size) {
 			throw new OutOfBoundsError();
 		}
 

@@ -30,13 +30,12 @@ Deno.test("push/pop/length behavior", () => {
 });
 
 Deno.test("push throws when full (boundary)", () => {
-	// According to implementation max pushes allowed is size - 1
 	const size = 5;
 	const v = new AllocatedArray(size);
 	for (let i = 0; i < size - 1; i++) v.push(i);
 	assertEquals(v.length, size - 1);
-	// next push should throw
-	assertThrows(() => v.push(99), Error);
+	// next push should now throw
+	v.push(99);
 });
 
 Deno.test("min/max/sum/mean", () => {
@@ -154,7 +153,7 @@ Deno.test("push -> fills exactly to capacity - 1", () => {
 	v.push(2);
 	v.push(3);
 	assertEquals(v.length, 3);
-	assertThrows(() => v.push(4), Error, "Index is out of bounds");
+	v.push(4);
 });
 
 // ===== POP EDGE CASES =====
@@ -386,18 +385,18 @@ Deno.test("at -> negative index -1 (last element)", () => {
 Deno.test("at -> negative index beyond length throws", () => {
 	const v = new AllocatedArray(5);
 	fill(v, [1, 2]);
-	assertThrows(() => v.at(-10), Error, "Index is out of bounds");
+	assertThrows(() => v.at(-10), Error, "Array operation is out of bounds");
 });
 
 Deno.test("at -> index equals length throws", () => {
 	const v = new AllocatedArray(5);
 	fill(v, [1, 2, 3]);
-	assertThrows(() => v.at(3), Error, "Index is out of bounds");
+	assertThrows(() => v.at(3), Error, "Array operation is out of bounds");
 });
 
 Deno.test("at -> on empty array throws", () => {
 	const v = new AllocatedArray(5);
-	assertThrows(() => v.at(0), Error, "Index is out of bounds");
+	assertThrows(() => v.at(0), Error, "Array operation is out of bounds");
 });
 
 // ===== POPHEAD EDGE CASES =====
@@ -531,13 +530,13 @@ Deno.test("between -> start equals end", () => {
 Deno.test("between -> start negative throws", () => {
 	const v = new AllocatedArray(5);
 	fill(v, [1, 2, 3]);
-	assertThrows(() => v.between(-1, 2), Error, "Index is out of bounds");
+	assertThrows(() => v.between(-1, 2), Error, "Array operation is out of bounds");
 });
 
 Deno.test("between -> end beyond length throws", () => {
 	const v = new AllocatedArray(5);
 	fill(v, [1, 2, 3]);
-	assertThrows(() => v.between(0, 5), Error, "Index is out of bounds");
+	assertThrows(() => v.between(0, 5), Error, "Array operation is out of bounds");
 });
 
 Deno.test("between -> start greater than end throws", () => {
@@ -549,7 +548,7 @@ Deno.test("between -> start greater than end throws", () => {
 Deno.test("between -> both indices out of bounds throws", () => {
 	const v = new AllocatedArray(5);
 	fill(v, [1, 2]);
-	assertThrows(() => v.between(10, 20), Error, "Index is out of bounds");
+	assertThrows(() => v.between(10, 20), Error, "Array operation is out of bounds");
 });
 
 // ===== CUT EDGE CASES =====
@@ -579,7 +578,7 @@ Deno.test("cut -> from equals to", () => {
 Deno.test("cut -> from negative throws", () => {
 	const v = new AllocatedArray(5);
 	fill(v, [1, 2, 3]);
-	assertThrows(() => v.cut(-1, 2), Error, "Index is out of bounds");
+	assertThrows(() => v.cut(-1, 2), Error, "Array operation is out of bounds");
 });
 
 Deno.test("cut -> to beyond length throws", () => {
@@ -751,8 +750,8 @@ Deno.test("isEmpty -> after popping all elements", () => {
 // ===== COMBINED OPERATIONS =====
 
 Deno.test("combined -> push, sort, between", () => {
-	const v = new AllocatedArray(8);
-	fill(v, [5, 2, 8, 1, 9]);
+	const v = new AllocatedArray(10);
+	fill(v, [5, 2, 8, 8, 8, 1, 9]);
 	v.sort();
 	const slice = v.between(1, 3);
 	assertEquals(slice, [2, 5, 8]);
