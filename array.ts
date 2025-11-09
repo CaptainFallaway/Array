@@ -1,58 +1,72 @@
-export const OutOfBounds = new Error("Index is out of bounds of the Vector");
-export const StartBiggerThanEnd = new Error(
-  "start argument is greater than end"
-);
+export class OutOfBoundsError extends Error {
+  constructor(message = "Index is out of bounds") {
+    super(message);
+    this.name = "OutOfBoundsError";
+  }
+}
 
-export class Vector {
+export class InvalidRangeError extends Error {
+  constructor(message = "Invalid range specified") {
+    super(message);
+    this.name = "InvalidRangeError";
+  }
+}
+
+export class SizeTooSmallError extends Error {
+  constructor(message = "The array size is too small") {
+    super(message);
+    this.name = "SizeTooSmallError";
+  }
+}
+
+export class AllocatedArray {
   private size: number;
   private array: number[] = [];
-  private _length: number = 0;
+
+  #length: number = 0;
 
   constructor(size: number) {
-    this.size = size;
-    this.array = this.newArr();
-  }
-
-  private newArr(): number[] {
-    const arr = [];
-
-    for (let i = 0; i < this.size; i++) {
-      arr[i] = 0;
+    if (size <= 1) {
+      throw new SizeTooSmallError();
     }
 
-    return arr;
+    this.size = size;
+
+    for (let i = 0; i < size; i++) {
+      this.array[i] = 0;
+    }
   }
 
   get isEmpty(): boolean {
-    return this._length <= 0;
+    return this.#length <= 0;
   }
 
   get containsOne(): boolean {
-    return this._length == 1;
+    return this.#length == 1;
+  }
+
+  get length(): number {
+    return this.#length;
   }
 
   push(num: number) {
-    if (this._length + 1 >= this.size) {
-      throw new Error("Array is filled");
+    if (this.#length + 1 >= this.size) {
+      throw new OutOfBoundsError();
     }
 
-    this.array[this._length] = num;
-    this._length++;
+    this.array[this.#length] = num;
+    this.#length++;
   }
 
   pop(): number {
     if (this.isEmpty) {
-      return 0;
+      return -1;
     }
 
-    this._length--;
-    this.array[this._length] = 0;
+    this.#length--;
+    this.array[this.#length] = 0;
 
-    return this._length;
-  }
-
-  length(): number {
-    return this._length;
+    return this.#length;
   }
 
   min(): number {
@@ -67,7 +81,7 @@ export class Vector {
     let min = this.array[0];
 
     // iterate only over populated portion
-    for (let i = 0; i < this._length; i++) {
+    for (let i = 0; i < this.#length; i++) {
       const num = this.array[i];
       if (num < min) {
         min = num;
@@ -89,7 +103,7 @@ export class Vector {
     let max = this.array[0];
 
     // iterate only over populated portion
-    for (let i = 0; i < this._length; i++) {
+    for (let i = 0; i < this.#length; i++) {
       const num = this.array[i];
       if (num > max) {
         max = num;
@@ -111,7 +125,7 @@ export class Vector {
     let sum = 0;
 
     // iterate only over populated portion
-    for (let i = 0; i < this._length; i++) {
+    for (let i = 0; i < this.#length; i++) {
       sum += this.array[i];
     }
 
@@ -119,44 +133,45 @@ export class Vector {
   }
 
   mean(): number {
+    if (this.#length === 0) {
+      return 0;
+    }
+
     const sum = this.sum();
-    return sum / this._length;
+    return sum / this.#length;
   }
 
   clear() {
-    for (let i = 0; i < this._length; i++) {
+    for (let i = 0; i < this.#length; i++) {
       this.array[i] = 0;
     }
-    this._length = 0;
+    this.#length = 0;
   }
 
   at(index: number): number {
-    let indx = 0;
-
     if (index < 0) {
-      indx = this._length - index;
-    } else {
-      indx = index;
+      // Convert negative number to positive for reverse grabbing (just like in python bby)
+      index = this.#length + index;
     }
 
-    if (indx > this._length - 1) {
-      throw OutOfBounds;
+    if (index < 0 || index >= this.#length) {
+      throw new OutOfBoundsError();
     }
 
-    return this.array[indx];
+    return this.array[index];
   }
 
   popHead(): number {
-    for (let i = 0; i < this._length; i++) {
+    for (let i = 0; i < this.#length; i++) {
       const j = i + 1;
-      if (j >= this._length) {
+      if (j >= this.#length) {
         break;
       }
       this.array[i] = this.array[j];
       this.array[j] = 0;
     }
 
-    return this._length--;
+    return this.#length--;
   }
 
   // Returns the time the sorting took in milliseconds
@@ -168,9 +183,9 @@ export class Vector {
     const start = Date.now();
 
     // Bubble sort only over the used portion of the internal array
-    for (let i = 0; i < this._length - 1; i++) {
+    for (let i = 0; i < this.#length - 1; i++) {
       let swapped = false;
-      for (let j = 0; j < this._length - 1 - i; j++) {
+      for (let j = 0; j < this.#length - 1 - i; j++) {
         if (this.array[j] > this.array[j + 1]) {
           const tmp = this.array[j];
           this.array[j] = this.array[j + 1];
@@ -187,21 +202,17 @@ export class Vector {
   }
 
   between(start: number, end: number): number[] {
-    if (end > this._length - 1) {
-      throw OutOfBounds;
-    }
-
-    if (start < 0) {
-      throw OutOfBounds;
+    if (start < 0 || end > this.#length - 1) {
+      throw new OutOfBoundsError();
     }
 
     if (start > end) {
-      throw StartBiggerThanEnd;
+      throw new InvalidRangeError();
     }
 
     const arr = [];
 
-    for (let i = 0; i < this._length; i++) {
+    for (let i = 0; i < this.#length; i++) {
       if (i >= start && i <= end) {
         arr[i - start] = this.array[i];
       }
@@ -210,5 +221,50 @@ export class Vector {
     return arr;
   }
 
-  // I don't give a shit about this anymore
+  cut(from: number, to: number): number {
+    if (from < 0 || to > this.#length - 1) {
+      throw new OutOfBoundsError();
+    }
+
+    if (from > to) {
+      throw new InvalidRangeError();
+    }
+
+    const len = this.#length;
+
+    for (let i = 0; i < len; i++) {
+      if (i >= from || i <= to) {
+        this.array[i] = 0;
+        this.#length--;
+      }
+    }
+
+    return this.#length;
+  }
+
+  reverse() {
+    if (this.isEmpty || this.containsOne) {
+      return;
+    }
+
+    const half = Math.floor(this.#length / 2);
+    for (let i = 0; i < half; i++) {
+      const reverseIndx = this.#length - 1 - i;
+      const tmp = this.array[i];
+      this.array[i] = this.array[reverseIndx];
+      this.array[reverseIndx] = tmp;
+    }
+  }
+
+  merge(arr: number[]): number {
+    if (arr.length + this.#length > this.size) {
+      throw new OutOfBoundsError();
+    }
+
+    for (const num of arr) {
+      this.push(num);
+    }
+
+    return this.#length;
+  }
 }
