@@ -8,8 +8,6 @@ function randomNum() {
 
 ll.fill(() => randomNum());
 
-ll.cut(0, 5);
-
 console.log(ll);
 
 ll.sort();
