@@ -1,6 +1,6 @@
-import { AllocatedStack } from "./array.ts";
+import { Slice } from "./array.ts";
 
-const ll = new AllocatedStack(10);
+const ll = new Slice(10);
 
 function randomNum() {
 	return Math.floor(Math.random() * 100);

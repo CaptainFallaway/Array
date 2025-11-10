@@ -24,7 +24,7 @@ export type MapCallback = (val: number, i: number) => number;
 export type ForEachCallback = (val: number, i: number) => void;
 export type FilterCallback = (val: number, i: number) => boolean;
 
-export class AllocatedStack {
+export class Slice {
 	#size: number;
 	#array: number[] = [];
 	#length: number = 0;
@@ -283,7 +283,7 @@ export class AllocatedStack {
 		return this.#length;
 	}
 
-	fill(value: number | FillCallback): AllocatedStack {
+	fill(value: number | FillCallback): Slice {
 		this.#length = this.#size;
 
 		for (let i = 0; i < this.#size; i++) {
@@ -297,14 +297,14 @@ export class AllocatedStack {
 		return this;
 	}
 
-	map(fn: MapCallback): AllocatedStack {
+	map(fn: MapCallback): Slice {
 		for (let i = 0; i < this.#length; i++) {
 			this.#array[i] = fn(this.#array[i], i);
 		}
 		return this;
 	}
 
-	forEach(fn: ForEachCallback): AllocatedStack {
+	forEach(fn: ForEachCallback): Slice {
 		for (let i = 0; i < this.#length; i++) {
 			fn(this.#array[i], i);
 		}
