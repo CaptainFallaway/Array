@@ -324,6 +324,10 @@ export class AllocatedStack {
 		}
 	}
 
+	details(): string {
+		return this.toString(true);
+	}
+
 	[Symbol.for("Deno.customInspect")](): string {
 		return this.toString();
 	}
