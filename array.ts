@@ -19,6 +19,10 @@ export class SizeTooSmallError extends Error {
 	}
 }
 
+export type FillCallback = (i: number) => number;
+export type MapCallback = (val: number, i: number) => number;
+export type ForEachCallback = (val: number, i: number) => void;
+
 export class AllocatedStack {
 	private size: number;
 	private array: number[] = [];
@@ -277,5 +281,33 @@ export class AllocatedStack {
 		}
 
 		return this.#length;
+	}
+
+	fill(value: number | FillCallback): AllocatedStack {
+		this.#length = this.size;
+
+		for (let i = 0; i < this.size; i++) {
+			if (typeof value === "function") {
+				this.array[i] = value(i);
+			} else {
+				this.array[i] = value;
+			}
+		}
+
+		return this;
+	}
+
+	map(fn: MapCallback): AllocatedStack {
+		for (let i = 0; i < this.#length; i++) {
+			this.array[i] = fn(this.array[i], i);
+		}
+		return this;
+	}
+
+	forEach(fn: ForEachCallback): AllocatedStack {
+		for (let i = 0; i < this.#length; i++) {
+			fn(this.array[i], i);
+		}
+		return this;
 	}
 }
