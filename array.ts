@@ -27,7 +27,6 @@ export type FilterCallback = (val: number, i: number) => boolean;
 export class AllocatedStack {
 	#size: number;
 	#array: number[] = [];
-
 	#length: number = 0;
 
 	constructor(size: number) {
