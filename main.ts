@@ -2,10 +2,8 @@ import { AllocatedStack } from "./array.ts";
 
 const ll = new AllocatedStack(10);
 
-console.log(ll);
-console.log(ll.length);
+ll.fill((i) => i + 1);
 
 ll.cut(0, 4);
 
-console.log(ll);
-console.log(ll.length);
+console.log(ll.toString(true));

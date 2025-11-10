@@ -22,10 +22,11 @@ export class SizeTooSmallError extends Error {
 export type FillCallback = (i: number) => number;
 export type MapCallback = (val: number, i: number) => number;
 export type ForEachCallback = (val: number, i: number) => void;
+export type FilterCallback = (val: number, i: number) => boolean;
 
 export class AllocatedStack {
-	private size: number;
-	private array: number[] = [];
+	#size: number;
+	#array: number[] = [];
 
 	#length: number = 0;
 
@@ -34,10 +35,10 @@ export class AllocatedStack {
 			throw new SizeTooSmallError();
 		}
 
-		this.size = size;
+		this.#size = size;
 
 		for (let i = 0; i < size; i++) {
-			this.array[i] = 0;
+			this.#array[i] = 0;
 		}
 	}
 
@@ -54,11 +55,11 @@ export class AllocatedStack {
 	}
 
 	push(num: number) {
-		if (this.#length + 1 > this.size) {
+		if (this.#length + 1 > this.#size) {
 			throw new OutOfBoundsError();
 		}
 
-		this.array[this.#length] = num;
+		this.#array[this.#length] = num;
 		this.#length++;
 	}
 
@@ -68,7 +69,7 @@ export class AllocatedStack {
 		}
 
 		this.#length--;
-		this.array[this.#length] = 0;
+		this.#array[this.#length] = 0;
 
 		return this.#length;
 	}
@@ -79,14 +80,14 @@ export class AllocatedStack {
 		}
 
 		if (this.containsOne) {
-			return this.array[0];
+			return this.#array[0];
 		}
 
-		let min = this.array[0];
+		let min = this.#array[0];
 
 		// iterate only over populated portion
 		for (let i = 0; i < this.#length; i++) {
-			const num = this.array[i];
+			const num = this.#array[i];
 			if (num < min) {
 				min = num;
 			}
@@ -101,14 +102,14 @@ export class AllocatedStack {
 		}
 
 		if (this.containsOne) {
-			return this.array[0];
+			return this.#array[0];
 		}
 
-		let max = this.array[0];
+		let max = this.#array[0];
 
 		// iterate only over populated portion
 		for (let i = 0; i < this.#length; i++) {
-			const num = this.array[i];
+			const num = this.#array[i];
 			if (num > max) {
 				max = num;
 			}
@@ -123,14 +124,14 @@ export class AllocatedStack {
 		}
 
 		if (this.containsOne) {
-			return this.array[0];
+			return this.#array[0];
 		}
 
 		let sum = 0;
 
 		// iterate only over populated portion
 		for (let i = 0; i < this.#length; i++) {
-			sum += this.array[i];
+			sum += this.#array[i];
 		}
 
 		return sum;
@@ -147,7 +148,7 @@ export class AllocatedStack {
 
 	clear() {
 		for (let i = 0; i < this.#length; i++) {
-			this.array[i] = 0;
+			this.#array[i] = 0;
 		}
 		this.#length = 0;
 	}
@@ -162,7 +163,7 @@ export class AllocatedStack {
 			throw new OutOfBoundsError();
 		}
 
-		return this.array[index];
+		return this.#array[index];
 	}
 
 	popHead(): number {
@@ -175,8 +176,8 @@ export class AllocatedStack {
 			if (j >= this.#length) {
 				break;
 			}
-			this.array[i] = this.array[j];
-			this.array[j] = 0;
+			this.#array[i] = this.#array[j];
+			this.#array[j] = 0;
 		}
 
 		this.#length--;
@@ -196,10 +197,10 @@ export class AllocatedStack {
 		for (let i = 0; i < this.#length - 1; i++) {
 			let swapped = false;
 			for (let j = 0; j < this.#length - 1 - i; j++) {
-				if (this.array[j] > this.array[j + 1]) {
-					const tmp = this.array[j];
-					this.array[j] = this.array[j + 1];
-					this.array[j + 1] = tmp;
+				if (this.#array[j] > this.#array[j + 1]) {
+					const tmp = this.#array[j];
+					this.#array[j] = this.#array[j + 1];
+					this.#array[j + 1] = tmp;
 					swapped = true;
 				}
 			}
@@ -224,7 +225,7 @@ export class AllocatedStack {
 
 		for (let i = 0; i < this.#length; i++) {
 			if (i >= start && i <= end) {
-				arr[i - start] = this.array[i];
+				arr[i - start] = this.#array[i];
 			}
 		}
 
@@ -244,12 +245,12 @@ export class AllocatedStack {
 
 		// Shift elements after 'to' down to 'from'
 		for (let i = to + 1; i < this.#length; i++) {
-			this.array[i - rangeLength] = this.array[i];
+			this.#array[i - rangeLength] = this.#array[i];
 		}
 
 		// Clear the end elements that are now duplicates
 		for (let i = this.#length - rangeLength; i < this.#length; i++) {
-			this.array[i] = 0;
+			this.#array[i] = 0;
 		}
 
 		this.#length -= rangeLength;
@@ -265,14 +266,14 @@ export class AllocatedStack {
 		const half = Math.floor(this.#length / 2);
 		for (let i = 0; i < half; i++) {
 			const reverseIndx = this.#length - 1 - i;
-			const tmp = this.array[i];
-			this.array[i] = this.array[reverseIndx];
-			this.array[reverseIndx] = tmp;
+			const tmp = this.#array[i];
+			this.#array[i] = this.#array[reverseIndx];
+			this.#array[reverseIndx] = tmp;
 		}
 	}
 
 	merge(arr: number[]): number {
-		if (arr.length + this.#length > this.size) {
+		if (arr.length + this.#length > this.#size) {
 			throw new OutOfBoundsError();
 		}
 
@@ -284,13 +285,13 @@ export class AllocatedStack {
 	}
 
 	fill(value: number | FillCallback): AllocatedStack {
-		this.#length = this.size;
+		this.#length = this.#size;
 
-		for (let i = 0; i < this.size; i++) {
+		for (let i = 0; i < this.#size; i++) {
 			if (typeof value === "function") {
-				this.array[i] = value(i);
+				this.#array[i] = value(i);
 			} else {
-				this.array[i] = value;
+				this.#array[i] = value;
 			}
 		}
 
@@ -299,15 +300,32 @@ export class AllocatedStack {
 
 	map(fn: MapCallback): AllocatedStack {
 		for (let i = 0; i < this.#length; i++) {
-			this.array[i] = fn(this.array[i], i);
+			this.#array[i] = fn(this.#array[i], i);
 		}
 		return this;
 	}
 
 	forEach(fn: ForEachCallback): AllocatedStack {
 		for (let i = 0; i < this.#length; i++) {
-			fn(this.array[i], i);
+			fn(this.#array[i], i);
 		}
 		return this;
+	}
+
+	toString(detailed?: boolean): string {
+		if (detailed) {
+			const stats = this.isEmpty
+				? "empty"
+				: `min=${this.min()}, max=${this.max()}, sum=${this.sum()}, mean=${this.mean()}`;
+			return `AllocatedStack { size: ${this.#size}, length: ${
+				this.#length
+			}, ${stats}, data: [${this.#array.join(", ")}] }`;
+		} else {
+			return `AllocatedStack[${this.#array.join(", ")}]`;
+		}
+	}
+
+	[Symbol.for("Deno.customInspect")](): string {
+		return this.toString();
 	}
 }
