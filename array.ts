@@ -37,7 +37,7 @@ export class Slice {
 		this.#size = size;
 
 		for (let i = 0; i < size; i++) {
-			this.#array[i] = 0;
+			this.#array[i] = NaN;
 		}
 	}
 
@@ -220,7 +220,7 @@ export class Slice {
 			throw new InvalidRangeError();
 		}
 
-		const arr = [];
+		const arr = new Array(end - start);
 
 		for (let i = 0; i < this.#length; i++) {
 			if (i >= start && i <= end) {
