@@ -233,18 +233,18 @@ export class AllocatedStack {
 	}
 
 	cut(from: number, to: number): number {
-		if (from < 0 || to > this.#length - 1) {
+		if (from < 0 || to > this.#length) {
 			throw new OutOfBoundsError();
 		}
 
-		if (from > to) {
+		if (from >= to) {
 			throw new InvalidRangeError();
 		}
 
-		const rangeLength = to - from + 1;
+		const rangeLength = to - from;
 
 		// Shift elements after 'to' down to 'from'
-		for (let i = to + 1; i < this.#length; i++) {
+		for (let i = to; i < this.#length; i++) {
 			this.#array[i - rangeLength] = this.#array[i];
 		}
 

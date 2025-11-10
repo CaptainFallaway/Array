@@ -556,7 +556,7 @@ Deno.test("between -> both indices out of bounds throws", () => {
 Deno.test("cut -> removes single element", () => {
 	const v = new AllocatedStack(5);
 	fill(v, [10, 20, 30]);
-	v.cut(1, 1);
+	v.cut(1, 2); // removes index 1 (exclusive end)
 	assertEquals(v.length, 2);
 	assertEquals(v.at(0), 10);
 	assertEquals(v.at(1), 30);
@@ -565,7 +565,7 @@ Deno.test("cut -> removes single element", () => {
 Deno.test("cut -> from and to at boundaries", () => {
 	const v = new AllocatedStack(6);
 	fill(v, [1, 2, 3, 4]);
-	const result = v.cut(0, 3);
+	const result = v.cut(0, 4); // removes all (0 to 3 inclusive via exclusive 4)
 	assertEquals(result, 0);
 	assertEquals(v.length, 0);
 	assertEquals(v.isEmpty, true);
@@ -574,10 +574,8 @@ Deno.test("cut -> from and to at boundaries", () => {
 Deno.test("cut -> from equals to", () => {
 	const v = new AllocatedStack(5);
 	fill(v, [10, 20, 30]);
-	v.cut(1, 1);
-	assertEquals(v.length, 2);
-	assertEquals(v.at(0), 10);
-	assertEquals(v.at(1), 30);
+	// from == to should throw (no elements to remove)
+	assertThrows(() => v.cut(1, 1), InvalidRangeError);
 });
 
 Deno.test("cut -> from negative throws", () => {
@@ -603,7 +601,7 @@ Deno.test("cut -> from greater than to throws", () => {
 Deno.test("cut -> removes first element", () => {
 	const v = new AllocatedStack(6);
 	fill(v, [10, 20, 30, 40]);
-	v.cut(0, 0);
+	v.cut(0, 1); // removes index 0
 	assertEquals(v.length, 3);
 	assertEquals(v.at(0), 20);
 	assertEquals(v.at(1), 30);
@@ -613,7 +611,7 @@ Deno.test("cut -> removes first element", () => {
 Deno.test("cut -> removes last element", () => {
 	const v = new AllocatedStack(6);
 	fill(v, [10, 20, 30, 40]);
-	v.cut(3, 3);
+	v.cut(3, 4); // removes index 3
 	assertEquals(v.length, 3);
 	assertEquals(v.at(0), 10);
 	assertEquals(v.at(1), 20);
@@ -623,7 +621,7 @@ Deno.test("cut -> removes last element", () => {
 Deno.test("cut -> removes first two elements", () => {
 	const v = new AllocatedStack(7);
 	fill(v, [1, 2, 3, 4, 5]);
-	v.cut(0, 1);
+	v.cut(0, 2); // removes indices 0-1
 	assertEquals(v.length, 3);
 	assertEquals(v.at(0), 3);
 	assertEquals(v.at(1), 4);
@@ -633,7 +631,7 @@ Deno.test("cut -> removes first two elements", () => {
 Deno.test("cut -> removes last two elements", () => {
 	const v = new AllocatedStack(7);
 	fill(v, [1, 2, 3, 4, 5]);
-	v.cut(3, 4);
+	v.cut(3, 5); // removes indices 3-4
 	assertEquals(v.length, 3);
 	assertEquals(v.at(0), 1);
 	assertEquals(v.at(1), 2);
@@ -643,7 +641,7 @@ Deno.test("cut -> removes last two elements", () => {
 Deno.test("cut -> removes middle elements", () => {
 	const v = new AllocatedStack(8);
 	fill(v, [1, 2, 3, 4, 5, 6]);
-	v.cut(2, 4);
+	v.cut(2, 5); // removes indices 2-4
 	assertEquals(v.length, 3);
 	assertEquals(v.at(0), 1);
 	assertEquals(v.at(1), 2);
@@ -653,7 +651,7 @@ Deno.test("cut -> removes middle elements", () => {
 Deno.test("cut -> removes entire array", () => {
 	const v = new AllocatedStack(6);
 	fill(v, [10, 20, 30, 40]);
-	v.cut(0, 3);
+	v.cut(0, 4); // removes all
 	assertEquals(v.length, 0);
 	assertEquals(v.isEmpty, true);
 });
@@ -661,7 +659,7 @@ Deno.test("cut -> removes entire array", () => {
 Deno.test("cut -> single element array", () => {
 	const v = new AllocatedStack(3);
 	v.push(42);
-	v.cut(0, 0);
+	v.cut(0, 1); // removes the only element
 	assertEquals(v.length, 0);
 	assertEquals(v.isEmpty, true);
 });
@@ -669,7 +667,7 @@ Deno.test("cut -> single element array", () => {
 Deno.test("cut -> two element array remove first", () => {
 	const v = new AllocatedStack(4);
 	fill(v, [10, 20]);
-	v.cut(0, 0);
+	v.cut(0, 1); // removes index 0
 	assertEquals(v.length, 1);
 	assertEquals(v.at(0), 20);
 });
@@ -677,7 +675,7 @@ Deno.test("cut -> two element array remove first", () => {
 Deno.test("cut -> two element array remove second", () => {
 	const v = new AllocatedStack(4);
 	fill(v, [10, 20]);
-	v.cut(1, 1);
+	v.cut(1, 2); // removes index 1
 	assertEquals(v.length, 1);
 	assertEquals(v.at(0), 10);
 });
@@ -685,7 +683,7 @@ Deno.test("cut -> two element array remove second", () => {
 Deno.test("cut -> two element array remove both", () => {
 	const v = new AllocatedStack(4);
 	fill(v, [10, 20]);
-	v.cut(0, 1);
+	v.cut(0, 2); // removes both
 	assertEquals(v.length, 0);
 	assertEquals(v.isEmpty, true);
 });
@@ -693,10 +691,10 @@ Deno.test("cut -> two element array remove both", () => {
 Deno.test("cut -> multiple cuts in succession", () => {
 	const v = new AllocatedStack(10);
 	fill(v, [1, 2, 3, 4, 5, 6, 7]);
-	v.cut(1, 2); // removes 2, 3 -> [1, 4, 5, 6, 7]
+	v.cut(1, 3); // removes indices 1-2 (values 2, 3) -> [1, 4, 5, 6, 7]
 	assertEquals(v.length, 5);
 	assertEquals(v.at(1), 4);
-	v.cut(2, 3); // removes 5, 6 -> [1, 4, 7]
+	v.cut(2, 4); // removes indices 2-3 (values 5, 6) -> [1, 4, 7]
 	assertEquals(v.length, 3);
 	assertEquals(v.at(0), 1);
 	assertEquals(v.at(1), 4);
@@ -706,7 +704,7 @@ Deno.test("cut -> multiple cuts in succession", () => {
 Deno.test("cut -> push after cut", () => {
 	const v = new AllocatedStack(6);
 	fill(v, [1, 2, 3, 4]);
-	v.cut(1, 2); // removes 2, 3 -> [1, 4]
+	v.cut(1, 3); // removes indices 1-2 (values 2, 3) -> [1, 4]
 	v.push(99);
 	assertEquals(v.length, 3);
 	assertEquals(v.at(0), 1);
@@ -717,7 +715,7 @@ Deno.test("cut -> push after cut", () => {
 Deno.test("cut -> cut then sort", () => {
 	const v = new AllocatedStack(8);
 	fill(v, [5, 1, 9, 3, 7]);
-	v.cut(1, 3); // removes 1, 9, 3 -> [5, 7]
+	v.cut(1, 4); // removes indices 1-3 (values 1, 9, 3) -> [5, 7]
 	v.sort();
 	assertEquals(v.length, 2);
 	assertEquals(v.at(0), 5);
@@ -727,7 +725,7 @@ Deno.test("cut -> cut then sort", () => {
 Deno.test("cut -> cut with negative numbers", () => {
 	const v = new AllocatedStack(8);
 	fill(v, [-5, -3, -1, 0, 2, 4]);
-	v.cut(1, 3); // removes -3, -1, 0 -> [-5, 2, 4]
+	v.cut(1, 4); // removes indices 1-3 (values -3, -1, 0) -> [-5, 2, 4]
 	assertEquals(v.length, 3);
 	assertEquals(v.at(0), -5);
 	assertEquals(v.at(1), 2);
@@ -737,7 +735,7 @@ Deno.test("cut -> cut with negative numbers", () => {
 Deno.test("cut -> verifies internal array is zeroed", () => {
 	const v = new AllocatedStack(6);
 	fill(v, [10, 20, 30, 40]);
-	v.cut(2, 3); // removes 30, 40 -> [10, 20]
+	v.cut(2, 4); // removes indices 2-3 (values 30, 40) -> [10, 20]
 	assertEquals(v.length, 2);
 	// Try to access beyond new length - should throw
 	assertThrows(() => v.at(2), OutOfBoundsError);
@@ -746,16 +744,16 @@ Deno.test("cut -> verifies internal array is zeroed", () => {
 Deno.test("cut -> at exact boundaries (0 to length-1)", () => {
 	const v = new AllocatedStack(5);
 	fill(v, [1, 2, 3]);
-	v.cut(0, 2);
+	v.cut(0, 3); // removes all
 	assertEquals(v.length, 0);
 	assertEquals(v.isEmpty, true);
 });
 
-Deno.test("cut -> from = 0, to = length-1 edge case", () => {
+Deno.test("cut -> from = 0, to = length edge case", () => {
 	const v = new AllocatedStack(10);
 	fill(v, [5, 10, 15, 20, 25, 30, 35]);
 	const initialLength = v.length;
-	v.cut(0, initialLength - 1);
+	v.cut(0, initialLength); // removes all
 	assertEquals(v.length, 0);
 	assertEquals(v.isEmpty, true);
 });
@@ -1018,7 +1016,8 @@ Deno.test("between -> on empty array throws", () => {
 
 Deno.test("cut -> on empty array throws", () => {
 	const v = new AllocatedStack(5);
-	assertThrows(() => v.cut(0, 0), OutOfBoundsError);
+	// Even cut(0, 0) should throw InvalidRangeError since from >= to
+	assertThrows(() => v.cut(0, 0), InvalidRangeError);
 });
 
 Deno.test("reverse -> verify min/max swap positions", () => {
@@ -1087,7 +1086,7 @@ Deno.test("merge -> then access merged elements", () => {
 Deno.test("cut -> entire array then try operations", () => {
 	const v = new AllocatedStack(6);
 	fill(v, [1, 2, 3]);
-	v.cut(0, 2);
+	v.cut(0, 3); // removes all (exclusive end)
 	assertEquals(v.isEmpty, true);
 	// Now try operations on empty
 	assertEquals(v.sum(), 0);
