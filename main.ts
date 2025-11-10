@@ -6,7 +6,7 @@ function randomNum() {
 	return Math.floor(Math.random() * 100);
 }
 
-ll.fill((i) => randomNum());
+ll.fill(() => randomNum());
 
 ll.cut(0, 5);
 
