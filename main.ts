@@ -1,16 +1,11 @@
-import { AllocatedArray } from "./array.ts";
+import { AllocatedStack } from "./array.ts";
 
-const ll = new AllocatedArray(250);
+const ll = new AllocatedStack(10);
 
-function randomNum(min: number, max: number): number {
-	return Math.floor(Math.random() * (max - min) + min);
-}
-
-const blah = new Array(250).fill(0).map(() => randomNum(-1000, 1000));
-
-ll.merge(blah);
-
-const time = ll.sort();
+ll.merge(new Array(10).fill(0).map((_, i) => i + 1));
 
 console.log(ll);
-console.log(time);
+
+ll.cut(0, 4);
+
+console.log(ll);

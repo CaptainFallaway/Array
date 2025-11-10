@@ -19,7 +19,7 @@ export class SizeTooSmallError extends Error {
 	}
 }
 
-export class AllocatedArray {
+export class AllocatedStack {
 	private size: number;
 	private array: number[] = [];
 
@@ -162,6 +162,10 @@ export class AllocatedArray {
 	}
 
 	popHead(): number {
+		if (this.isEmpty) {
+			return -1;
+		}
+
 		for (let i = 0; i < this.#length; i++) {
 			const j = i + 1;
 			if (j >= this.#length) {
@@ -171,7 +175,9 @@ export class AllocatedArray {
 			this.array[j] = 0;
 		}
 
-		return this.#length--;
+		this.#length--;
+
+		return this.#length;
 	}
 
 	// Returns the time the sorting took in milliseconds
@@ -230,14 +236,19 @@ export class AllocatedArray {
 			throw new InvalidRangeError();
 		}
 
-		const len = this.#length;
+		const rangeLength = to - from + 1;
 
-		for (let i = 0; i < len; i++) {
-			if (i >= from || i <= to) {
-				this.array[i] = 0;
-				this.#length--;
-			}
+		// Shift elements after 'to' down to 'from'
+		for (let i = to + 1; i < this.#length; i++) {
+			this.array[i - rangeLength] = this.array[i];
 		}
+
+		// Clear the end elements that are now duplicates
+		for (let i = this.#length - rangeLength; i < this.#length; i++) {
+			this.array[i] = 0;
+		}
+
+		this.#length -= rangeLength;
 
 		return this.#length;
 	}
